@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../config/prisma";
-import { AuthenticatedRequest } from "../types";
+import { AuthenticatedRequest, JWTPayload } from "../types";
+import bcrypt from "bcrypt";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -22,7 +23,11 @@ export const register = async (req: Request, res: Response) => {
 
     // create user
     const user = await prisma.user.create({
-      data: { username, email, password },
+      data: {
+        username,
+        email,
+        password: await bcrypt.hash(password, 10),
+      },
     });
 
     res.status(201).json({
@@ -40,14 +45,26 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid email or password" });
+    }
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ error: "Invalid email or password" });
     }
     const token = jwt.sign(
-      { userId: user.id, email: user.email, username: user.username },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "24h" }
+      {
+        userId: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      } as JWTPayload,
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: "24h",
+      }
     );
+
     res.json({ message: "Login successful", token });
   } catch (error) {
     res.status(500).json({ error: "Login failed" });
