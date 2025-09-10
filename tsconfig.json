@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",          /* Menentukan versi JavaScript output */
+    "module": "commonjs",         /* Menggunakan sistem modul Node.js */
+    "outDir": "./dist",           /* Folder output untuk file JavaScript hasil kompilasi */
+    "rootDir": "./src",           /* Folder input untuk file TypeScript */
+    "strict": true,               /* Mengaktifkan semua aturan pengecekan tipe yang ketat */
+    "esModuleInterop": true,      /* Memudahkan interoperabilitas antara modul CommonJS dan ES */
+    "skipLibCheck": true,         /* Melewatkan pengecekan tipe dari file deklarasi */
+    "forceConsistentCasingInFileNames": true
+  }
+}
