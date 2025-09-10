@@ -1,0 +1,833 @@
+{
+  "info": {
+    "name": "Discord Project Hub API",
+    "description": "API documentation for Discord Project Management System with bidding functionality",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new user account"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"User registered\",\n  \"user\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"username\": \"johndoe\",\n    \"email\": \"john@example.com\",\n    \"role\": \"USER\",\n    \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', responseJson.token);",
+                  "    console.log('JWT Token saved:', responseJson.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login user and get JWT token"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Login successful\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6ImpvaG5kb2UiLCJpYXQiOjE2OTQ2ODgwMDAsImV4cCI6MTY5NDc3NDQwMH0.example-jwt-signature\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get current authenticated user profile"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"user\": {\n    \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"email\": \"john@example.com\",\n    \"username\": \"johndoe\",\n    \"role\": \"USER\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Get All Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "description": "Get all projects with user and message details"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/projects",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"projects\": [\n    {\n      \"id\": \"proj-123\",\n      \"title\": \"Build Discord Bot\",\n      \"description\": \"Need a Discord bot for project management\",\n      \"budget\": 1000,\n      \"priced\": 800,\n      \"isOpenBidding\": true,\n      \"isCompleted\": false,\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\",\n      \"userId\": \"user-123\",\n      \"user\": {\n        \"id\": \"user-123\",\n        \"username\": \"johndoe\",\n        \"email\": \"john@example.com\",\n        \"role\": \"USER\",\n        \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n        \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n      },\n      \"message\": null\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('project_id', responseJson.project.id);",
+                  "    console.log('Project ID saved:', responseJson.project.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Build Discord Bot\",\n  \"description\": \"Need a Discord bot for project management with real-time features\",\n  \"budget\": 1000,\n  \"priced\": 800,\n  \"isOpenBidding\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "description": "Create a new project"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Build Discord Bot\",\n  \"description\": \"Need a Discord bot for project management\",\n  \"budget\": 1000,\n  \"isOpenBidding\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/projects",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Project created successfully\",\n  \"project\": {\n    \"id\": \"proj-123\",\n    \"title\": \"Build Discord Bot\",\n    \"description\": \"Need a Discord bot for project management\",\n    \"budget\": 1000,\n    \"priced\": null,\n    \"isOpenBidding\": true,\n    \"isCompleted\": false,\n    \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T10:00:00.000Z\",\n    \"userId\": \"user-123\",\n    \"user\": {\n      \"id\": \"user-123\",\n      \"username\": \"johndoe\",\n      \"email\": \"john@example.com\",\n      \"role\": \"USER\",\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Project by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "description": "Get a specific project by ID"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"project\": {\n    \"id\": \"proj-123\",\n    \"title\": \"Build Discord Bot\",\n    \"description\": \"Need a Discord bot for project management\",\n    \"budget\": 1000,\n    \"priced\": null,\n    \"isOpenBidding\": true,\n    \"isCompleted\": false,\n    \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T10:00:00.000Z\",\n    \"userId\": \"user-123\",\n    \"user\": {\n      \"id\": \"user-123\",\n      \"username\": \"johndoe\",\n      \"email\": \"john@example.com\",\n      \"role\": \"USER\",\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n    },\n    \"message\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Build Advanced Discord Bot\",\n  \"description\": \"Need an advanced Discord bot with AI features\",\n  \"budget\": 1500,\n  \"priced\": 1200,\n  \"isOpenBidding\": false,\n  \"isCompleted\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "description": "Update an existing project (only project owner)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Build Advanced Discord Bot\",\n  \"priced\": 1200,\n  \"isOpenBidding\": false\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Project updated successfully\",\n  \"project\": {\n    \"id\": \"proj-123\",\n    \"title\": \"Build Advanced Discord Bot\",\n    \"description\": \"Need an advanced Discord bot with AI features\",\n    \"budget\": 1500,\n    \"priced\": 1200,\n    \"isOpenBidding\": false,\n    \"isCompleted\": false,\n    \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T10:30:00.000Z\",\n    \"userId\": \"user-123\",\n    \"user\": {\n      \"id\": \"user-123\",\n      \"username\": \"johndoe\",\n      \"email\": \"john@example.com\",\n      \"role\": \"USER\",\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "description": "Delete a project (only project owner)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Project deleted successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Create Message for Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"I'm interested in working on this Discord bot project. I have 3 years of experience with Discord.js and can deliver this within 2 weeks.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/message",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "message"
+              ]
+            },
+            "description": "Create a message for a project (one message per project)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"I'm interested in working on this project.\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123/message",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123",
+                    "message"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Message created successfully\",\n  \"data\": {\n    \"id\": \"msg-123\",\n    \"content\": \"I'm interested in working on this Discord bot project.\",\n    \"projectId\": \"proj-123\",\n    \"createdAt\": \"2025-09-10T11:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T11:00:00.000Z\",\n    \"project\": {\n      \"id\": \"proj-123\",\n      \"title\": \"Build Discord Bot\",\n      \"description\": \"Need a Discord bot for project management\",\n      \"budget\": 1000,\n      \"priced\": null,\n      \"isOpenBidding\": true,\n      \"isCompleted\": false,\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\",\n      \"userId\": \"user-123\",\n      \"user\": {\n        \"id\": \"user-123\",\n        \"username\": \"johndoe\",\n        \"email\": \"john@example.com\",\n        \"role\": \"USER\",\n        \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n        \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Message for Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/message",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "message"
+              ]
+            },
+            "description": "Get the message for a specific project"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123/message",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123",
+                    "message"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": {\n    \"id\": \"msg-123\",\n    \"content\": \"I'm interested in working on this Discord bot project.\",\n    \"projectId\": \"proj-123\",\n    \"createdAt\": \"2025-09-10T11:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T11:00:00.000Z\",\n    \"project\": {\n      \"id\": \"proj-123\",\n      \"title\": \"Build Discord Bot\",\n      \"description\": \"Need a Discord bot for project management\",\n      \"budget\": 1000,\n      \"priced\": null,\n      \"isOpenBidding\": true,\n      \"isCompleted\": false,\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\",\n      \"userId\": \"user-123\",\n      \"user\": {\n        \"id\": \"user-123\",\n        \"username\": \"johndoe\",\n        \"email\": \"john@example.com\",\n        \"role\": \"USER\",\n        \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n        \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Message",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated: I'm very interested in working on this Discord bot project. I have 5 years of experience with Discord.js, Node.js, and TypeScript. I can deliver this within 1 week with additional features.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/message",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "message"
+              ]
+            },
+            "description": "Update the message for a project"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Updated message content\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123/message",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123",
+                    "message"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Message updated successfully\",\n  \"data\": {\n    \"id\": \"msg-123\",\n    \"content\": \"Updated message content\",\n    \"projectId\": \"proj-123\",\n    \"createdAt\": \"2025-09-10T11:00:00.000Z\",\n    \"updatedAt\": \"2025-09-10T11:30:00.000Z\",\n    \"project\": {\n      \"id\": \"proj-123\",\n      \"title\": \"Build Discord Bot\",\n      \"description\": \"Need a Discord bot for project management\",\n      \"budget\": 1000,\n      \"priced\": null,\n      \"isOpenBidding\": true,\n      \"isCompleted\": false,\n      \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n      \"updatedAt\": \"2025-09-10T10:00:00.000Z\",\n      \"userId\": \"user-123\",\n      \"user\": {\n        \"id\": \"user-123\",\n        \"username\": \"johndoe\",\n        \"email\": \"john@example.com\",\n        \"role\": \"USER\",\n        \"createdAt\": \"2025-09-10T10:00:00.000Z\",\n        \"updatedAt\": \"2025-09-10T10:00:00.000Z\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/message",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "message"
+              ]
+            },
+            "description": "Delete the message for a project"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{jwt_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/projects/proj-123/message",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "projects",
+                    "proj-123",
+                    "message"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Message deleted successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

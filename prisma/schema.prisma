@@ -42,7 +42,7 @@ model project {
 
 model message {
   id        String   @id @default(uuid())
-  content   String
+  content   Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   projectId String   @unique

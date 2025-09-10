@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discord Project Hub - Dashboard</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #5865f2 0%, #7289da 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+        position: relative;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+      }
+
+      .status-badge.connected {
+        background: #00d4aa;
+        color: white;
+      }
+
+      .status-badge.disconnected {
+        background: #f04747;
+        color: white;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 0;
+        min-height: 600px;
+      }
+
+      .projects-section {
+        padding: 30px;
+        border-right: 1px solid #e0e0e0;
+      }
+
+      .section-title {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .projects-grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .project-card {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .project-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .project-card.open-bidding {
+        border-left: 4px solid #00d4aa;
+      }
+
+      .project-card.closed-bidding {
+        border-left: 4px solid #f04747;
+      }
+
+      .project-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .project-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+        color: #666;
+      }
+
+      .project-budget {
+        font-weight: bold;
+        color: #5865f2;
+      }
+
+      .project-status {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+      }
+
+      .status-open {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-closed {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .project-description {
+        color: #555;
+        line-height: 1.4;
+        margin-bottom: 15px;
+      }
+
+      .project-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9em;
+        color: #666;
+      }
+
+      .chat-section {
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        max-height: 400px;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        padding: 12px;
+        border-radius: 8px;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.discord {
+        background: linear-gradient(135deg, #e8f4ff 0%, #e1f0ff 100%);
+        border-left: 4px solid #5865f2;
+      }
+
+      .message.web {
+        background: linear-gradient(135deg, #f0f8ff 0%, #e8f7ff 100%);
+        border-left: 4px solid #00d4aa;
+      }
+
+      .message.system {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-left: 4px solid #ffc107;
+        font-style: italic;
+      }
+
+      .message-header {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .message-content {
+        color: #555;
+        line-height: 1.4;
+      }
+
+      .timestamp {
+        font-size: 0.8em;
+        color: #888;
+      }
+
+      .chat-input {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #5865f2;
+      }
+
+      button {
+        padding: 12px 20px;
+        background: #5865f2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #4752c4;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+
+      .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #5865f2;
+        margin-bottom: 5px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: #00d4aa;
+        color: white;
+        border-radius: 8px;
+        font-weight: bold;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-out;
+        z-index: 1000;
+      }
+
+      .notification.show {
+        transform: translateX(0);
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+
+      .emoji {
+        font-size: 48px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎮 Discord Project Hub</h1>
+        <p>Real-time project management with Discord integration</p>
+        <div class="status-badge" id="statusBadge">Disconnected</div>
+      </div>
+
+      <div class="main-content">
+        <div class="projects-section">
+          <div class="section-title">
+            🚀 Active Projects
+            <button
+              onclick="loadProjects()"
+              style="margin-left: auto; padding: 8px 16px; font-size: 12px"
+            >
+              Refresh
+            </button>
+          </div>
+          <div class="projects-grid" id="projectsGrid">
+            <div class="loading">
+              <div class="emoji">⏳</div>
+              <p>Loading projects...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-section">
+          <div class="chat-header">
+            <div class="section-title">💬 Live Chat</div>
+          </div>
+
+          <div class="chat-messages" id="chatMessages">
+            <div class="message system">
+              <div class="message-content">
+                Welcome! Connect to start chatting with Discord...
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input">
+            <div class="input-group">
+              <input
+                type="text"
+                id="username"
+                placeholder="Your username"
+                value="WebUser"
+              />
+            </div>
+            <div class="input-group">
+              <input
+                type="text"
+                id="messageInput"
+                placeholder="Type your message..."
+              />
+              <button onclick="sendMessage()" id="sendBtn" disabled>
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-number" id="totalProjects">0</div>
+          <div class="stat-label">Total Projects</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="openBidding">0</div>
+          <div class="stat-label">Open Bidding</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="totalMessages">0</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="connectedUsers">0</div>
+          <div class="stat-label">Online Users</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+      // Initialize Socket.IO connection
+      const socket = io("http://localhost:3000");
+
+      // State
+      let projects = [];
+      let messageCount = 0;
+      let connectedUsers = 1;
+
+      // Socket.IO Events
+      socket.on("connect", () => {
+        console.log("Connected to server");
+        updateConnectionStatus(true);
+        document.getElementById("sendBtn").disabled = false;
+        addSystemMessage("🟢 Connected to server");
+        loadProjects();
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected from server");
+        updateConnectionStatus(false);
+        document.getElementById("sendBtn").disabled = true;
+        addSystemMessage("🔴 Disconnected from server");
+      });
+
+      // Real-time events
+      socket.on("discordmsg", (data) => {
+        addDiscordMessage(data);
+        messageCount++;
+        updateStats();
+      });
+
+      socket.on("new_project", (data) => {
+        addSystemMessage(
+          `🆕 New project created: "${data.title}" by ${data.username}`
+        );
+        showNotification(`New Project: ${data.title}`);
+        loadProjects(); // Refresh projects
+      });
+
+      socket.on("project_update", (data) => {
+        addSystemMessage(`📝 Project updated: "${data.title}"`);
+        showNotification(`Project Updated: ${data.title}`);
+        loadProjects(); // Refresh projects
+      });
+
+      socket.on("new_bid", (data) => {
+        addSystemMessage(`💰 New bid placed on: ${data.projectTitle}`);
+        showNotification(`New Bid: ${data.projectTitle}`);
+      });
+
+      // Functions
+      async function loadProjects() {
+        try {
+          const response = await fetch("/api/projects", {
+            headers: {
+              Authorization: `Bearer ${
+                localStorage.getItem("jwt_token") || ""
+              }`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            projects = data.projects || [];
+            renderProjects();
+            updateStats();
+          } else {
+            document.getElementById("projectsGrid").innerHTML = `
+                        <div class="empty-state">
+                            <div class="emoji">🔐</div>
+                            <p>Please login to view projects</p>
+                            <button onclick="promptLogin()">Login</button>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          console.error("Error loading projects:", error);
+          document.getElementById("projectsGrid").innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">❌</div>
+                        <p>Error loading projects</p>
+                        <button onclick="loadProjects()">Retry</button>
+                    </div>
+                `;
+        }
+      }
+
+      function renderProjects() {
+        const grid = document.getElementById("projectsGrid");
+
+        if (projects.length === 0) {
+          grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">📝</div>
+                        <p>No projects yet. Create the first one!</p>
+                    </div>
+                `;
+          return;
+        }
+
+        grid.innerHTML = projects
+          .map(
+            (project) => `
+                <div class="project-card ${
+                  project.isOpenBidding ? "open-bidding" : "closed-bidding"
+                }">
+                    <div class="project-title">${escapeHtml(
+                      project.title
+                    )}</div>
+                    <div class="project-meta">
+                        <span class="project-budget">$${project.budget.toLocaleString()}</span>
+                        <span class="project-status ${
+                          project.isOpenBidding
+                            ? "status-open"
+                            : "status-closed"
+                        }">
+                            ${project.isOpenBidding ? "Open Bidding" : "Closed"}
+                        </span>
+                    </div>
+                    <div class="project-description">${escapeHtml(
+                      project.description
+                    )}</div>
+                    <div class="project-footer">
+                        <span>👤 ${escapeHtml(project.user.username)}</span>
+                        <span>📅 ${new Date(
+                          project.createdAt
+                        ).toLocaleDateString()}</span>
+                    </div>
+                    ${
+                      project.priced
+                        ? `<div style="margin-top: 10px; color: #00d4aa; font-weight: bold;">💰 Current Bid: $${project.priced.toLocaleString()}</div>`
+                        : ""
+                    }
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      function sendMessage() {
+        const messageInput = document.getElementById("messageInput");
+        const usernameInput = document.getElementById("username");
+        const message = messageInput.value.trim();
+        const username = usernameInput.value.trim() || "WebUser";
+
+        if (message) {
+          socket.emit("webmsg", {
+            message: message,
+            username: username,
+          });
+
+          addWebMessage({
+            user: username,
+            content: message,
+            timestamp: Date.now(),
+          });
+
+          messageInput.value = "";
+          messageCount++;
+          updateStats();
+        }
+      }
+
+      function addDiscordMessage(data) {
+        const messagesDiv = document.getElementById("chatMessages");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message discord";
+
+        messageDiv.innerHTML = `
+                <div class="message-header">
+                    🎮 ${escapeHtml(data.user)}
+                    <span class="timestamp">${formatTime(data.timestamp)}</span>
+                </div>
+                <div class="message-content">${escapeHtml(data.content)}</div>
+            `;
+
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      function addWebMessage(data) {
+        const messagesDiv = document.getElementById("chatMessages");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message web";
+
+        messageDiv.innerHTML = `
+                <div class="message-header">
+                    🌐 ${escapeHtml(data.user)}
+                    <span class="timestamp">${formatTime(data.timestamp)}</span>
+                </div>
+                <div class="message-content">${escapeHtml(data.content)}</div>
+            `;
+
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      function addSystemMessage(message) {
+        const messagesDiv = document.getElementById("chatMessages");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message system";
+
+        messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${message}
+                    <span class="timestamp">${formatTime(Date.now())}</span>
+                </div>
+            `;
+
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      function updateConnectionStatus(connected) {
+        const badge = document.getElementById("statusBadge");
+
+        if (connected) {
+          badge.textContent = "🟢 Connected";
+          badge.className = "status-badge connected";
+        } else {
+          badge.textContent = "🔴 Disconnected";
+          badge.className = "status-badge disconnected";
+        }
+      }
+
+      function updateStats() {
+        document.getElementById("totalProjects").textContent = projects.length;
+        document.getElementById("openBidding").textContent = projects.filter(
+          (p) => p.isOpenBidding
+        ).length;
+        document.getElementById("totalMessages").textContent = messageCount;
+        document.getElementById("connectedUsers").textContent = connectedUsers;
+      }
+
+      function showNotification(message) {
+        const notification = document.getElementById("notification");
+        notification.textContent = message;
+        notification.classList.add("show");
+
+        setTimeout(() => {
+          notification.classList.remove("show");
+        }, 3000);
+      }
+
+      function promptLogin() {
+        const email = prompt("Enter your email:");
+        const password = prompt("Enter your password:");
+
+        if (email && password) {
+          login(email, password);
+        }
+      }
+
+      async function login(email, password) {
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem("jwt_token", data.token);
+            addSystemMessage("✅ Logged in successfully");
+            loadProjects();
+          } else {
+            addSystemMessage("❌ Login failed");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          addSystemMessage("❌ Login error");
+        }
+      }
+
+      // Utility functions
+      function formatTime(timestamp) {
+        return new Date(timestamp).toLocaleTimeString();
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Event listeners
+      document
+        .getElementById("messageInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            sendMessage();
+          }
+        });
+
+      // Initialize
+      updateConnectionStatus(false);
+      updateStats();
+    </script>
+  </body>
+</html>

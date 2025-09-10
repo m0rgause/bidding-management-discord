@@ -1,6 +1,8 @@
 import express, { Express } from "express";
 import http from "http";
+import cors from "cors";
 import { discordClient } from "./services/discord.service";
+import { SocketService } from "./services/socket.service";
 import dotenv from "dotenv";
 import bodyParser = require("body-parser");
 import routes from "./routes/index.route";
@@ -8,12 +10,32 @@ import routes from "./routes/index.route";
 dotenv.config();
 const app: Express = express();
 const server = http.createServer(app);
+
+// Middleware
+app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static("public"));
 
+// Initialize Socket.IO with Discord integration
+const CHANNEL_ID = process.env.CHANNEL_ID;
+if (!CHANNEL_ID) {
+  throw new Error("CHANNEL_ID must be set in environment variables");
+}
+
+const socketService = new SocketService(server, discordClient, CHANNEL_ID);
+
+// Make socket service available globally for controllers
+declare global {
+  var socketService: SocketService;
+}
+global.socketService = socketService;
+
+// Routes
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.json({
+    message: "Welcome to RadarJoki API",
+  });
 });
-
 app.use("/api", routes);
 
 // Initialize Discord Client

@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, ChannelType } from "discord.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -11,6 +11,7 @@ if (!BOT_TOKEN || !CHANNEL_ID) {
     "BOT_TOKEN and CHANNEL_ID must be set in the environment variables."
   );
 }
+
 export const discordClient = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -19,13 +20,23 @@ export const discordClient = new Client({
   ],
 });
 
-discordClient.once("clientReady", () => {
+discordClient.once("ready", () => {
   console.log(`Logged in as ${discordClient.user?.tag}!`);
 });
 
-discordClient.on("messageCreate", async (message) => {
-  if (message.channelId === CHANNEL_ID && !message.author.bot) {
-    console.log(`Message from ${message.author.tag}: ${message.content}`);
-    // You can add more logic here to handle the message as needed
+// Export functions for sending messages to Discord
+export const sendToDiscord = async (message: string, username?: string) => {
+  try {
+    const channel = await discordClient.channels.fetch(CHANNEL_ID);
+    if (channel && channel.type === ChannelType.GuildText) {
+      const formattedMessage = username
+        ? `**${username}**: ${message}`
+        : message;
+      await channel.send(formattedMessage);
+      return true;
+    }
+  } catch (error) {
+    console.error("Error sending message to Discord:", error);
+    return false;
   }
-});
+};

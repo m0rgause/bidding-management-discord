@@ -6,12 +6,33 @@ import { AuthenticatedRequest } from "../types";
 export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
+    // checking email and username constraints
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
+    });
+    const existingUsername = await prisma.user.findUnique({
+      where: { username },
+    });
+    if (existingEmail) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+    if (existingUsername) {
+      return res.status(400).json({ error: "Username already in use" });
+    }
+
+    // create user
     const user = await prisma.user.create({
       data: { username, email, password },
     });
-    res.status(201).json({ message: "User registered", user });
+
+    res.status(201).json({
+      message: "User registered",
+      user,
+    });
   } catch (error) {
-    res.status(500).json({ error: "Registration failed" });
+    res.status(500).json({
+      error: "Registration failed",
+    });
   }
 };
 
