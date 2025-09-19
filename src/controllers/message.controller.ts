@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
-import { AuthenticatedRequest } from "../types";
+import { AuthenticatedRequest, ApiResponse } from "../types";
 
 export const createMessage = async (
   req: AuthenticatedRequest,
@@ -17,12 +17,18 @@ export const createMessage = async (
     });
 
     if (!project) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({
+        error: "Project not found",
+        success: false,
+      } as ApiResponse<null>);
     }
 
     // Check if project already has a message
     if (project.message) {
-      return res.status(400).json({ error: "Project already has a message" });
+      return res.status(400).json({
+        error: "Project already has a message",
+        success: false,
+      } as ApiResponse<null>);
     }
 
     const message = await prisma.message.create({
@@ -48,11 +54,16 @@ export const createMessage = async (
       },
     });
 
-    res
-      .status(201)
-      .json({ message: "Message created successfully", data: message });
+    res.status(201).json({
+      message: "Message created successfully",
+      data: message,
+      success: true,
+    } as ApiResponse<typeof message>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create message" });
+    res.status(500).json({
+      error: "Failed to create message",
+      success: false,
+    } as ApiResponse<null>);
   }
 };
 
@@ -84,12 +95,18 @@ export const getMessageByProjectId = async (
     });
 
     if (!message) {
-      return res.status(404).json({ error: "Message not found" });
+      return res.status(404).json({
+        error: "Message not found",
+        success: false,
+      } as ApiResponse<null>);
     }
 
-    res.json({ message });
+    res.json({ data: message, success: true } as ApiResponse<typeof message>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch message" });
+    res.status(500).json({
+      error: "Failed to fetch message",
+      success: false,
+    } as ApiResponse<null>);
   }
 };
 
@@ -122,9 +139,16 @@ export const updateMessage = async (
       },
     });
 
-    res.json({ message: "Message updated successfully", data: message });
+    res.json({
+      message: "Message updated successfully",
+      data: message,
+      success: true,
+    } as ApiResponse<typeof message>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to update message" });
+    res.status(500).json({
+      error: "Failed to update message",
+      success: false,
+    } as ApiResponse<null>);
   }
 };
 
@@ -139,8 +163,16 @@ export const deleteMessage = async (
       where: { projectId },
     });
 
-    res.json({ message: "Message deleted successfully" });
+    res.json({
+      message: "Message deleted successfully",
+      success: true,
+    } as ApiResponse<null>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete message" });
+    res
+      .status(500)
+      .json({
+        error: "Failed to delete message",
+        success: false,
+      } as ApiResponse<null>);
   }
 };

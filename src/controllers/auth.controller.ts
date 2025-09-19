@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../config/prisma";
-import { AuthenticatedRequest, JWTPayload } from "../types";
+import { ApiResponse, AuthenticatedRequest, JWTPayload } from "../types";
 import bcrypt from "bcrypt";
+import { success } from "zod";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -15,10 +16,16 @@ export const register = async (req: Request, res: Response) => {
       where: { username },
     });
     if (existingEmail) {
-      return res.status(400).json({ error: "Email already in use" });
+      return res.status(400).json({
+        success: false,
+        error: "Email already in use",
+      } as ApiResponse<null>);
     }
     if (existingUsername) {
-      return res.status(400).json({ error: "Username already in use" });
+      return res.status(400).json({
+        success: false,
+        error: "Username already in use",
+      } as ApiResponse<null>);
     }
 
     // create user
@@ -32,12 +39,14 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "User registered",
-      user,
-    });
+      data: user,
+      success: true,
+    } as ApiResponse<typeof user>);
   } catch (error) {
     res.status(500).json({
       error: "Registration failed",
-    });
+      success: false,
+    } as ApiResponse<null>);
   }
 };
 
@@ -46,11 +55,17 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(400).json({ error: "Invalid email or password" });
+      return res.status(400).json({
+        error: "Invalid email or password",
+        success: false,
+      } as ApiResponse<null>);
     }
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(400).json({ error: "Invalid email or password" });
+      return res.status(400).json({
+        error: "Invalid email or password",
+        success: false,
+      } as ApiResponse<null>);
     }
     const token = jwt.sign(
       {
@@ -65,16 +80,24 @@ export const login = async (req: Request, res: Response) => {
       }
     );
 
-    res.json({ message: "Login successful", token });
+    res.json({
+      message: "Login successful",
+      data: token,
+      success: true,
+    } as ApiResponse<string>);
   } catch (error) {
-    res.status(500).json({ error: "Login failed" });
+    res
+      .status(500)
+      .json({ error: "Login failed", success: false } as ApiResponse<null>);
   }
 };
 
 export const me = async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user;
   if (!user) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res
+      .status(401)
+      .json({ error: "Unauthorized", success: false } as ApiResponse<null>);
   }
-  res.json({ user });
+  res.json({ data: user, success: true } as ApiResponse<typeof user>);
 };

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
-import { AuthenticatedRequest } from "../types";
+import { AuthenticatedRequest, ApiResponse } from "../types";
+import { success } from "zod";
 
 export const getAllProjects = async (
   req: AuthenticatedRequest,
@@ -25,9 +26,12 @@ export const getAllProjects = async (
         userId: req.user?.userId,
       },
     });
-    res.json({ projects });
+    res.json({ data: projects, success: true } as ApiResponse<typeof projects>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch projects" });
+    res.status(500).json({
+      error: "Failed to fetch projects",
+      success: false,
+    } as ApiResponse<null>);
   }
 };
 
@@ -40,7 +44,9 @@ export const createProject = async (
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized", success: false } as ApiResponse<null>);
     }
 
     const project = await prisma.project.create({
@@ -77,9 +83,16 @@ export const createProject = async (
       });
     }
 
-    res.status(201).json({ message: "Project created successfully", project });
+    res.status(201).json({
+      message: "Project created successfully",
+      data: project,
+      success: true,
+    } as ApiResponse<typeof project>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create project" });
+    res.status(500).json({
+      error: "Failed to create project",
+      success: false,
+    } as ApiResponse<null>);
   }
 };
 
@@ -108,12 +121,22 @@ export const getProjectById = async (
     });
 
     if (!project) {
-      return res.status(404).json({ error: "Project not found" });
+      return res
+        .status(404)
+        .json({
+          error: "Project not found",
+          success: false,
+        } as ApiResponse<null>);
     }
 
-    res.json({ project });
+    res.json({ data: project, success: true } as ApiResponse<typeof project>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch project" });
+    res
+      .status(500)
+      .json({
+        error: "Failed to fetch project",
+        success: false,
+      } as ApiResponse<null>);
   }
 };
 
@@ -132,13 +155,21 @@ export const updateProject = async (
     });
 
     if (!existingProject) {
-      return res.status(404).json({ error: "Project not found" });
+      return res
+        .status(404)
+        .json({
+          error: "Project not found",
+          success: false,
+        } as ApiResponse<null>);
     }
 
     if (existingProject.userId !== userId) {
       return res
         .status(403)
-        .json({ error: "You can only update your own projects" });
+        .json({
+          error: "You can only update your own projects",
+          success: false,
+        } as ApiResponse<null>);
     }
 
     const project = await prisma.project.update({
@@ -171,9 +202,18 @@ export const updateProject = async (
       });
     }
 
-    res.json({ message: "Project updated successfully", project });
+    res.json({
+      message: "Project updated successfully",
+      data: project,
+      success: true,
+    } as ApiResponse<typeof project>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to update project" });
+    res
+      .status(500)
+      .json({
+        error: "Failed to update project",
+        success: false,
+      } as ApiResponse<null>);
   }
 };
 
@@ -191,21 +231,37 @@ export const deleteProject = async (
     });
 
     if (!existingProject) {
-      return res.status(404).json({ error: "Project not found" });
+      return res
+        .status(404)
+        .json({
+          error: "Project not found",
+          success: false,
+        } as ApiResponse<null>);
     }
 
     if (existingProject.userId !== userId) {
       return res
         .status(403)
-        .json({ error: "You can only delete your own projects" });
+        .json({
+          error: "You can only delete your own projects",
+          success: false,
+        } as ApiResponse<null>);
     }
 
     await prisma.project.delete({
       where: { id },
     });
 
-    res.json({ message: "Project deleted successfully" });
+    res.json({
+      message: "Project deleted successfully",
+      success: true,
+    } as ApiResponse<null>);
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete project" });
+    res
+      .status(500)
+      .json({
+        error: "Failed to delete project",
+        success: false,
+      } as ApiResponse<null>);
   }
 };

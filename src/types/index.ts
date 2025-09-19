@@ -123,3 +123,10 @@ export interface SocketEvents {
 export interface AuthenticatedRequest extends Request {
   user?: JWTPayload;
 }
+
+export interface ApiResponse<T> {
+  data?: T;
+  message?: string;
+  error?: string;
+  success: boolean;
+}

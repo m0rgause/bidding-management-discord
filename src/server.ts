@@ -6,15 +6,21 @@ import { SocketService } from "./services/socket.service";
 import dotenv from "dotenv";
 import bodyParser = require("body-parser");
 import routes from "./routes/index.route";
+import { ApiResponse } from "./types";
 
 dotenv.config();
 const app: Express = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
-app.use(express.static("public"));
+// app.use(express.static("public"));
 
 // Initialize Socket.IO with Discord integration
 const CHANNEL_ID = process.env.CHANNEL_ID;
@@ -33,9 +39,12 @@ global.socketService = socketService;
 // Routes
 app.get("/", (req, res) => {
   res.json({
+    data: null,
     message: "Welcome to RadarJoki API",
-  });
+    success: true,
+  } as ApiResponse<null>);
 });
+
 app.use("/api", routes);
 
 // Initialize Discord Client

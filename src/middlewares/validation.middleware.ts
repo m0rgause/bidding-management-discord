@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import { ApiResponse } from "../types";
 
 export const userRegistrationSchema = z.object({
   email: z.email(),
@@ -24,7 +25,12 @@ export const validateBody = (schema: z.ZodSchema<any>) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
       const jsonError = JSON.parse(result.error.message);
-      return res.status(400).json({ errors: jsonError[0].message });
+      return res
+        .status(400)
+        .json({
+          error: jsonError[0].message,
+          success: false,
+        } as ApiResponse<null>);
     }
     req.body = result.data;
     next();
