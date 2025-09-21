@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import bodyParser = require("body-parser");
 import routes from "./routes/index.route";
 import { ApiResponse } from "./types";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app: Express = express();
@@ -20,6 +21,8 @@ app.use(
   })
 );
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 // app.use(express.static("public"));
 
 // Initialize Socket.IO with Discord integration
