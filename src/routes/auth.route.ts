@@ -1,4 +1,4 @@
-import { register, login, me } from "../controllers/auth.controller";
+import { register, login, me, logout } from "../controllers/auth.controller";
 import { Router } from "express";
 import {
   validateBody,
@@ -10,6 +10,7 @@ import { authenticateToken } from "../middlewares/auth.middleware";
 const router = Router();
 router.post("/register", validateBody(userRegistrationSchema), register);
 router.post("/login", validateBody(userLoginSchema), login);
+router.post("/logout", logout);
 router.get("/me", authenticateToken, me);
 
 export default router;

@@ -80,11 +80,10 @@ export const login = async (req: Request, res: Response) => {
       }
     );
 
-    // Set token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      sameSite: "lax", // Adjust based on your needs
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
@@ -98,6 +97,11 @@ export const login = async (req: Request, res: Response) => {
       .status(500)
       .json({ error: "Login failed", success: false } as ApiResponse<null>);
   }
+};
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out", success: true } as ApiResponse<null>);
 };
 
 export const me = async (req: AuthenticatedRequest, res: Response) => {

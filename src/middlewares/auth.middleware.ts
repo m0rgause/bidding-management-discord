@@ -8,8 +8,6 @@ export const authenticateToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.cookies.token, "<< ini token");
-
   const token = req.cookies.token;
   if (!token) return res.sendStatus(401);
 
